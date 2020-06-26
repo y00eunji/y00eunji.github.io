@@ -1,238 +1,353 @@
-<!DOCTYPE html>
-<html lang="en">
+import React, { Component } from "react";
+import { Route, BrowserRouter as Router, Redirect } from "react-router-dom";
+import "./App.css";
+import Home from "./components/Home";
+import Login from "./components/Login";
+import Join from "./components/Join";
+import SecondPw from "./components/SecondPw";
+import Blood from "./components/Blood";
+import Topbar from "./components/Topbar";
+import MyInfo from "./components/MyInfo";
+import Board from "./components/Board";
+import Trade from "./components/Trade";
+import BoardItem from "./components/BoardPages/BoardItem"
+import BoardWrite from "./components/BoardPages/BoardWrite";
+import BoardItem_up from "./components/BoardPages/BoardItem_up";
 
-<head>
+class App extends Component {
+  constructor(){
+    super();
+    this.state = {
+      isAuth: false,
+      token: null,
+      userId: null,
+      authLoading: false,
+      error: null,
+      url: "http://localhost:8080",
+      success: false,
+    };
+  }
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
+  componentDidMount() {
+    const expiryDate = localStorage.getItem("expiryDate");
 
-  <title>Y E J</title>
+    if (!expiryDate) {
+      return;
+    }
+    if (new Date(expiryDate) <= new Date()) {
+      this.logoutHandler();
+      return;
+    }
 
-  <!-- Bootstrap core CSS -->
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    const remainingMilliseconds = new Date(expiryDate).getTime() - new Date().getTime();
+    this.setAutoLogout(remainingMilliseconds);
+  }
 
-  <!-- Custom fonts for this template -->
-  <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet">
-  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+  componentWillMount(){
+    const token = localStorage.getItem("token");
+    this.setState({ token: token });
+  }
 
-  <!-- Custom styles for this template -->
-  <link href="css/resume.min.css" rel="stylesheet">
+  // 자동 로그아웃
+  setAutoLogout = (milliseconds) => {
+    setTimeout(() => {
+      this.logoutHandler();
+    }, milliseconds);
+  };
 
-</head>
+  // 로그아웃
+  logoutHandler = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("expiryDate");
+    localStorage.removeItem('userId');
+    alert('로그아웃 되었습니다.')
+    this.setState({ token: null })
+  };
 
-<body id="page-top">
+  // 로그인
+  loginHandler = (event, authData) => {
+    event.persist();
+    this.setState({ authLoading: true });
+    fetch(`${this.state.url}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: authData.email,
+        password: authData.password,
+      }),
+    })
+      .then((res) => {
+        if (res.status === 500){
+          alert("등록된 회원정보가 없습니다.")
+          throw new Error("등록된 회원정보가 없습니다.")
+        }
+        else if (res.status === 401){
+          alert("이메일 또는 비밀번호가 일치하지 않습니다.")
+          throw new Error("이메일 또는 비밀번호가 일치하지 않습니다.")
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        alert(resData.message);
+        this.setState({
+          isAuth: true,
+          token: resData.token,
+          authLoading: false,
+        });
+        localStorage.setItem("token", resData.token);
+        // 1시간 설정
+        const remainingMilliseconds = 60 * 60 * 1000;
+        const expiryDate = new Date(
+          new Date().getTime() + remainingMilliseconds
+        );
+        localStorage.setItem("expiryDate", expiryDate.toISOString());
+        this.setAutoLogout(remainingMilliseconds);
+      })
+      .catch((err) => {
+        console.log("error", err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err,
+        });
+      });
+  };
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
-    <a class="navbar-brand js-scroll-trigger" href="#page-top">
-      <span class="d-block d-lg-none">yooeunji</span>
-      <span class="d-none d-lg-block">
-        <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="img/profile.jpg">
-      </span>
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link js-scroll-trigger" href="#about">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link js-scroll-trigger" href="#education">Education</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link js-scroll-trigger" href="#LANGUAGES">LANGUAGES</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link js-scroll-trigger" href="#ME">ME</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link js-scroll-trigger" href="#FORK">FORK</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  // 회원가입
+  signupHandler = (event, authData) => {
+    event.persist();
+    this.setState({ authLoading: true });
+    fetch(`${this.state.url}/auth/register`, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: authData.email,
+        name: authData.name,
+        password: authData.password,
+        phone: authData.phone,
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((resData) => {
+        console.log("resData",resData);
+        alert(resData.message);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          userId: resData.userId,
+        });
+      })
+      .catch((err) => {
+        console.log("error", err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err,
+        });
+      });
+  };
 
-  <div class="container-fluid p-0">
+  // 헌혈증 등록
+  bloodHandler = (event, blood) => {
+    event.persist();
+    this.setState({ authLoading: true });
+    fetch(`${this.state.url}/blood/register`, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        number: blood.number,
+        secondpassword: blood.password,
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((resData) => {
+        console.log(resData);
+        alert(resData.message);
+        this.setState({ isAuth: false, authLoading: false });
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log("error", err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err,
+        });
+      });
+  };
 
-    <section class="resume-section p-3 p-lg-5 d-flex align-items-center" id="about">
-      <div class="w-100">
-        <h1 class="mb-5">유은지
+  // 2차 비밀번호 생성
+  pwHandler = (event, authData) => {
+    event.persist();
+    this.setState({ authLoading: true });
+    fetch(`${this.state.url}/auth/password`, {
+      method: "post",
+      headers: {
+        Authorization: "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        secondpassword: authData.password,
+        userId: authData.userId
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((resData) => {
+        console.log('?????',resData);
+        alert(resData.message);
+        this.setState({ isAuth: false, authLoading: false });
+        window.location.reload();
 
-        </h1>
-        <div class="subheading mb-5"> </div>
-        <p class="lead mb-5">
-          1997.02.27 <br>aine0227@naver.com<br>https://github.com/y00eunji
-        </p>
-        <div class="social-icons">
-          <a href="#">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
-          <a href="#">
-            <i class="fab fa-github"></i>
-          </a>
-          <a href="#">
-            <i class="fab fa-twitter"></i>
-          </a>
-          <a href="#">
-            <i class="fab fa-facebook-f"></i>
-          </a>
-        </div>
+      })
+      .catch((err) => {
+        console.log("error", err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err,
+        });
+      });
+  };
+
+  // 헌혈증 보내기
+  tradeHandler = (event, authData) => {
+    event.persist();
+    this.setState({ authLoading: true });
+    fetch(`${this.state.url}/blood/send`, {
+      method: "post",
+      headers: {
+        Authorization: "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        secondpassword: authData.password,
+        receiver: authData.receiver,
+        count: authData.count
+      }),
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          alert('보낼 수 있는 헌혈증이 없습니다')
+          window.location.reload();
+          throw new Error("Validation failed.");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        alert(`${resData.log[0].receiver}에게 보냈습니다.`);
+        this.setState({ authLoading: false });
+        window.location.reload();
+      })
+      .catch((err) => {
+        this.setState({
+          error: err,
+        });
+      });
+  };
+
+  // 게시글 등록
+  onBoardWrite = (event, data) => {
+    event.persist();
+    fetch(`${this.state.url}/board/post`, {
+      method: "post",
+      headers: {
+        Authorization: "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: data.title,
+        content: data.content,
+        count: data.count
+      }),
+    })
+      .then(res => res.json())
+      .then(resData => {
+        this.setState({ success: true });
+        window.location.reload();
+      })
+  };
+
+  render() {
+    
+    return (
+      <div className="header">
+        <Router>
+          <Topbar token={this.state.token} onLogout={this.logoutHandler}/>
+
+          <Route exact path="/" component={Home} />
+
+          <Route exact path="/myInfo">
+            {this.state.token ? <MyInfo data={{token: this.state.token, url:this.state.url}}/>
+            : <Redirect to="/login" /> }
+          </Route>
+
+          <Route exact path="/login">
+            {this.state.token ? <Redirect to="/" />
+            : <Login onLogin={this.loginHandler} /> }
+          </Route>
+
+          <Route exact path="/join">
+            {this.state.token || this.state.userId ? <SecondPw secondPassword={this.pwHandler} userId={this.state.userId} />  
+            : <Join onSignup={this.signupHandler} /> }
+          </Route>
+
+          <Route exact path="/secondpw">
+            {this.state.token || this.state.userId ? <SecondPw secondPassword={this.pwHandler} userId={this.state.userId} /> : <Login onLogin={this.loginHandler} />}
+          </Route>
+
+          <Route exact path="/blood/register"
+            render={() => <Blood onBlood={this.bloodHandler} token={this.state.token}/>}
+          />
+
+          <Route exact path="/blood/trade"
+            render={() => <Trade tradeBlood={this.tradeHandler} token={this.state.token}/>}
+          />
+
+          <Route exact path="/board"
+            render={() => <Board data={{token: this.state.token, url:this.state.url}}/>}
+          />
+
+          <Route exact path="/board/write"
+            render={() => {
+              if(this.state.success){
+                return <Redirect to="/board" />
+              }
+              else if(this.state.token){
+                return <BoardWrite onBoardWrite={this.onBoardWrite} token={this.state.token}/>
+              }
+              else {
+                return <Redirect to="/login" />
+              }
+            }}
+          />
+
+          <Route exact path="/board/list/:id"
+            render={({match}) => <BoardItem data={{token: this.state.token, url:this.state.url}} match={match}/>}
+          />
+
+          <Route exact path="/board/update/:id"
+            render={({match}) => {
+                return <BoardItem_up data={{token: this.state.token, url:this.state.url}} match={match}/>
+            }}
+          />
+          
+        </Router>
       </div>
-    </section>
+    );
+  }
+}
 
-      </div>
-    </section>
-
-    <hr class="m-0">
-
-    <section class="resume-section p-3 p-lg-5 d-flex justify-content-center" id="education">
-      <div class="w-100">
-        <h2 class="mb-5">EDUCATION</h2>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between mb-5">
-          <div class="resume-content">
-            <h3 class="mb-0">초등</h3>
-            <div class="subheading mb-3">대모초등학교</div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary">2004 - 2010</span>
-          </div>
-        </div>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between mb-5">
-          <div class="resume-content">
-            <h3 class="mb-0">중등</h3>
-            <div class="subheading mb-3">대왕중학교 </div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary">2010 - 2013</span>
-          </div>
-        </div>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between mb-5">
-          <div class="resume-content">
-            <h3 class="mb-0">고등</h3>
-            <div class="subheading mb-3">경기여자고등학교</div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary">2013 - 2016</span>
-          </div>
-        </div>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between">
-          <div class="resume-content">
-            <h3 class="mb-0">대학</h3>
-            <div class="subheading mb-3"> 제주대학교 공과대학 컴퓨터공학전공</div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary">2017 - 현재</span>
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <hr class="m-0">
-
-    <section class="resume-section p-3 p-lg-5 d-flex align-items-center" id="LANGUAGES">
-      <div class="w-100">
-        <h2 class="mb-5">Languages</h2>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between mb-5">
-          <div class="resume-content">
-            <h3 class="mb-0">사용가능언어</h3>
-            <div class="subheading mb-3">C언어<br>PYTHON</div>
-            <div></div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary"></span>
-          </div>
-        </div>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between">
-          <div class="resume-content">
-            <h3 class="mb-0">공부중인 언어</h3>
-            <div class="subheading mb-3">JAVA<br>HTML</div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary"></span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <hr class="m-0">
-
-   
-    <hr class="m-0">
-
-    <section class="resume-section p-3 p-lg-5 d-flex align-items-center" id="ME">
-      <div class="w-100">
-        <h2 class="mb-5">ME</h2>
-        <p>제 장점은 호기심이 많아 다양한 일들에 관심이 많은 것입니다. 대신 단점으로는 호기심으로 시작하여 끈기가 부족하다는 점입니다. 따라서 하고자하는 분야를 제대로 정하지 못하였지만 이번 수업인 오픈소스나 캡스톤 수업 프로젝트를 통해 정할 예정입니다. 2학년에는 안드로이드 스튜디오를 통해서 봉사활동을 분야별로 소개해주는 어플을 만들었습니다. 현재는 캡스톤 수업을 통해 만들 작품을 구상중에 있습니다. 오픈 api를 이용하여 작품을 만들기 위해 다른 사람들이 많은 것들을 찾아보며 참고하고 있습니다. </p>
-        <p class="mb-0"></p>
-      </div>
-    </section>
-
-    <hr class="m-0">
-
-    <section class="resume-section p-3 p-lg-5 d-flex align-items-center" id="FORK">
-      <div class="w-100">
-        <h2 class="mb-5">FORK</h2>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between mb-5">
-          <div class="resume-content">
-            
-            <h3 class="mb-0">🌼마리오 게임</h3>
-            <div class="subheading mb-3"><a href = "https://github.com/y00eunji/mario-game">https://github.com/y00eunji/mario-game</a><br>전에 했던 마리오게임에 관심이 많아 포크하게되었습니다.</div>
-            <div></div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary"></span>
-          </div>
-        </div>
-
-        <div class="resume-item d-flex flex-column flex-md-row justify-content-between">
-          <div class="resume-content">
-            <h3 class="mb-0">🌼프로그래밍 언어 책 추천</h3>
-            <div class="subheading mb-3">
-              <a href ="https://github.com/y00eunji/free-programming-books">https://github.com/y00eunji/free-programming-books</a>
-              <br>프로그래밍 책을 늘 고민하면서 시간을 많이 보내는데 추천해주는 점이 마음에 들어 포크하였습니다</div>
-            <p></p>
-          </div>
-          <div class="resume-date text-md-right">
-            <span class="text-primary"></span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </div>
-
-  <!-- Bootstrap core JavaScript -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Plugin JavaScript -->
-  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-
-  <!-- Custom scripts for this template -->
-  <script src="js/resume.min.js"></script>
-
-</body>
-
-</html>
+export default App;
