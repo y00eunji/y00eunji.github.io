@@ -1,33 +1,268 @@
+
 <!DOCTYPE html>
-<html lang = "en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width", initial-scale=1.0">
-        <title>Document</title>
-        <link href="stlyesheet">
-    </head>
-
-    <body>
-        <header>
-            <div class="log"><img src=""></div>
-            <nav>
-                <ol>
-                    <li><a href ="">뎁스1</a> </li>
-                    <li><a href ="">뎁스2</a> </li>
-                </ol>
-            </nav>
-        </header>
-        <main>
-            <section>
-                <details>   
-                    <summary>summary</summary>
-                </details>
-            </section>
-
-        </main>
-        <footer>
-
-        </footer>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tarnsform Example</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            width: 800px;
+            display: flex;
+            justify-content: center;
+            flex-flow: row wrap;
+            margin: 0 auto;
+        }
+        .card {
+            display: inline-block;
+            margin: 10px;
+            background: #fff;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 3px 5px #ddd;
+            color: #555;
+        }
+        .card p{
+            text-align: center;
+        }
+        .card .box {
+            width: 100px;
+            height: 100px;
+            margin: auto;
+            background: #ddd;
+            cursor: pointer;
+            box-shadow: 0 0 5px #ccc inset;
+        }
+        .card .box .fill{
+            width: 100px;
+            height: 100px;
+            position: relative;
+            background: #03A9F4;
+            opacity: .5;
+            box-shadow: 0 0 5px #ccc;
+            border: 1px solid;
+        }
+        .translate:hover .fill {
+            transform: translate(50px, 50px);
+        }
+        .translatex:hover .fill {
+            transform: translateX(20px);
+        }
+        .translatey:hover .fill {
+             transform: translateY(20px);
+        }
+        .scale:hover .fill {
+            transform: scale(2);
+        }
+        .scalex:hover .fill {
+            transform: scaleX(2);
+        }
+        .scaley:hover .fill {
+            transform: scaleY(2);
+        }
+        .skew:hover .fill {
+            transform: skew(10deg, 10deg);
+        }
+        .skewx:hover .fill {
+            transform: skewX(10deg);
+        }
+        .skewy:hover .fill {
+            transform: skewY(10deg);
+        }
+        .rotate:hover .fill {
+            transform: rotate(45deg);
+        }
+        .rotatex:hover .fill {
+            transform: rotateX(45deg);
+        }
+        .rotatey:hover .fill {
+            transform: rotateY(45deg);
+        }
+        .matrix:hover .fill {
+            transform: matrix(1.5, 0.174533, 0.174533, 1.5, 50, 50);
+        }
+        .prespective .card .box{
+            perspective: 200px;
+            perspective-origin: center center;
+        }
+        .translate3d:hover .fill {
+            transform: translate3d(50px, 50px, 50px);
+        }
+        .translatez:hover .fill {
+            transform: translateZ(50px);
+        }
+        .scale3d:hover .fill {
+            transform: scale3d(2,2,2);
+        }
+        .scaleZ:hover .fill {
+            transform: scaleZ(2);
+        }
+        .rotate3d:hover .fill {
+            transform: rotate3d(5, 5, 5, 45deg);
+        }
+        .rotate3dx:hover .fill {
+            transform: rotateX(45deg);
+        }
+        .rotate3dy:hover .fill {
+            transform: rotateY(45deg);
+        }
+        .rotate3dz:hover .fill {
+            transform: rotateZ(45deg);
+        }
+        .transform-origin:hover .fill {
+            transform-origin: top right;
+        }
+    </style>
+</head>
+<body>
+<h1>2D Transform</h1>
+    <div class="container">
+        <div class="card">
+            <div class="box translate">
+                <div class="fill"></div>
+            </div>
+            <p> translate(50px, 50px)</p>
+        </div>
+        <div class="card">
+            <div class="box translatex">
+                <div class="fill"></div>
+            </div>
+            <p> translateX(20px)</p>
+        </div>
+        <div class="card">
+            <div class="box translatey">
+                <div class="fill"></div>
+            </div>
+            <p> translateY(20px)</p>
+        </div>
+        <br>
+        <div class="card">
+            <div class="box scale">
+                <div class="fill"></div>
+            </div>
+            <p> scale(2)</p>
+        </div>
+        <div class="card">
+            <div class="box scalex">
+                <div class="fill"></div>
+            </div>
+            <p> scaleX(2)</p>
+        </div>
+        <div class="card">
+            <div class="box scaley">
+                <div class="fill"></div>
+            </div>
+            <p> scaleY(2)</p>
+        </div>
+        <div class="card">
+            <div class="box skew">
+                <div class="fill"></div>
+            </div>
+            <p> skew(10deg, 10deg)</p>
+        </div>
+        <div class="card">
+            <div class="box skewx">
+                <div class="fill"></div>
+            </div>
+            <p> skewX(10deg)</p>
+        </div>
+        <br>
+        <div class="card">
+            <div class="box skewy">
+                <div class="fill"></div>
+            </div>
+            <p> skewY(10deg)</p>
+        </div>
+        <div class="card">
+            <div class="box rotate">
+                <div class="fill"></div>
+            </div>
+            <p> ratate(45deg)</p>
+        </div>
+        <div class="card">
+            <div class="box rotatex">
+                <div class="fill"></div>
+            </div>
+            <p> ratateX(45deg)</p>
+        </div>
+        <div class="card">
+            <div class="box rotatey">
+                <div class="fill"></div>
+            </div>
+            <p> ratateY(45deg)</p>
+        </div>
+        <div class="card">
+            <div class="box matrix">
+                <div class="fill"></div>
+            </div>
+            <p> matrix(1.5, 0.174533, 0.174533, 1.5, 50, 50)</p>
+        </div>
+    </div>
+<h1>3D Transform</h1>
+    <div class="container prespective">
+        <div class="card">
+            <div class="box translate3d">
+                <div class="fill"></div>
+            </div>
+            <p>translate3d(50px, 50px, 50px)</p>
+        </div>
+        <div class="card">
+            <div class="box translatez">
+                <div class="fill"></div>
+            </div>
+            <p>translateZ(50px)</p>
+        </div>
+        <div class="card">
+            <div class="box scale3d">
+                <div class="fill"></div>
+            </div>
+            <p>scale3d(2,2,2)</p>
+        </div>
+        <div class="card">
+            <div class="box scalez">
+                <div class="fill"></div>
+            </div>
+            <p>scaleZ(2)</p>
+        </div>
+        <div class="card">
+            <div class="box rotate3d">
+                <div class="fill"></div>
+            </div>
+            <p>rotate3d(5, 5, 5, 45deg)</p>
+        </div>
+        <div class="card">
+            <div class="box rotate3dx">
+                <div class="fill"></div>
+            </div>
+            <p>rotateX(45deg)</p>
+        </div>
+        <div class="card">
+            <div class="box rotate3dy">
+                <div class="fill"></div>
+            </div>
+            <p>rotateY(45deg)</p>
+        </div>
+        <div class="card">
+            <div class="box rotate3dz">
+                <div class="fill"></div>
+            </div>
+            <p>rotateZ(45deg)</p>
+        </div>
+    </div>
+<h1>3D Transform-origin</h1>
+    <div class="container transform-origin">
+        <div class="card">
+            <div class="box ">
+                <div class="fill"></div>
+            </div>
+            <p>tarnsform-origin: 0 0 0;<br>transform-origin: left top;<br>rotateZ(45deg);</p>
+        </div>
+    </div>
+</body>
 </html>
-
